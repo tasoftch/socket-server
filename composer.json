@@ -1,0 +1,19 @@
+{
+  "name": "tasoft/socket-server",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Thomas Abplanalp",
+      "email": "info@tasoft.ch"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "TASoft\\Server\\" : "src"
+    }
+  },
+  "require" : {
+    "php": ">=7.2",
+    "ext-sockets": "*"
+  }
+}
