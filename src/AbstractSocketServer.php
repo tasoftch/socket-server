@@ -40,7 +40,21 @@ abstract class AbstractSocketServer implements SocketServerInterface
     protected $reuseAddress = true;
     protected $keepConnectionAlive = true;
 
+    /** @var string */
+    private $name;
+
+
+
     const BUFFER_CHUNK_SIZE = 2048;
+
+    /**
+     * AbstractSocketServer constructor.
+     * @param string $name
+     */
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
 
     /**
      * This method gets called once to create a general socket for receiving connections.
@@ -65,6 +79,14 @@ abstract class AbstractSocketServer implements SocketServerInterface
      * @return bool
      */
     abstract protected function bindCommunicationSocket($socket): bool;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
     /**
      * This method must properly close the socket and release all occupied resources.
@@ -175,6 +197,8 @@ abstract class AbstractSocketServer implements SocketServerInterface
             pcntl_signal(SIGINT, $handler, false);
             pcntl_signal(SIGTERM, $handler, false);
         }
+
+        @cli_set_process_title($this->getName());
 
         while (1) {
             $read = [$this->socket];

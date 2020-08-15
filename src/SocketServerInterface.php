@@ -30,6 +30,13 @@ use TASoft\Server\Response\ResponseInterface;
 interface SocketServerInterface
 {
     /**
+     * Gets the server name
+     *
+     * @return string
+     */
+    public function getName(): string;
+
+    /**
      * Launch the server.
      * This method should block the current thread.
      * It should transform incoming connections into sessions and handle their requests.

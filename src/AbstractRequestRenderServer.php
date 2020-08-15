@@ -29,7 +29,6 @@ use TASoft\Server\Render\RequestRenderDependenciesInterface;
 use TASoft\Server\Render\RequestRenderInterface;
 use TASoft\Server\Request\RequestInterface;
 use TASoft\Server\Response\ResponseInterface;
-use TASoft\Server\Session\SessionInterface;
 
 abstract class AbstractRequestRenderServer extends AbstractSocketServer
 {
@@ -41,9 +40,11 @@ abstract class AbstractRequestRenderServer extends AbstractSocketServer
 
     /**
      * AbstractRequestRenderServer constructor.
+     * @param string $name
      */
-    public function __construct()
+    public function __construct($name = "socket-server by TASoft")
     {
+        parent::__construct($name);
         $this->renders = new DependencyCollection();
     }
 
