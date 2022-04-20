@@ -34,15 +34,17 @@ class TCPServer extends AbstractRequestRenderServer
     /** @var string */
     private $port;
 
-    /**
-     * TCPServer constructor.
-     * @param string $address
-     * @param string $port
-     */
-    public function __construct(string $address, string $port)
+	/**
+	 * TCPServer constructor.
+	 * @param string $address
+	 * @param string $port
+	 * @param string $name
+	 */
+    public function __construct(string $address, string $port, string $name = 'My TCP Server')
     {
         $this->address = $address;
         $this->port = $port;
+        parent::__construct($name);
     }
 
 

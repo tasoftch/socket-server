@@ -36,9 +36,10 @@ class UnixServer extends AbstractRequestRenderServer
      * UnixServer constructor.
      * @param string $socketName
      */
-    public function __construct(string $socketName)
+    public function __construct(string $socketName, string $name = 'My UNIX Server')
     {
         $this->socketName = $socketName;
+        parent::__construct($name);
     }
 
     /**
