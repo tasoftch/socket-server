@@ -55,6 +55,16 @@ class UDPServer extends TCPServer
 
 	public function run()
 	{
+		$this->socket = $this->createCommunicationSocket();
+		if(!is_resource($this->socket)) {
+			throw new NoCommunicationSocketException("Could not create communication seocket");
+		}
+
+		$this->configureCommunicationSocket($this->socket);
+		if(!$this->bindCommunicationSocket($this->socket)) {
+			throw  new SocketBindException("Could not configure and bind socket");
+		}
+
 		if(function_exists('pcntl_signal')) {
 			$handler = function() use (&$clients) {
 				foreach($clients as $c) {
