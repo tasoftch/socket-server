@@ -73,9 +73,8 @@ abstract class AbstractSession implements SessionInterface
      */
     public function stringifyResponse(?ResponseInterface $response): ?string
     {
-        if($response instanceof PlainTextResponse)
-            return $response->getResponse();
-        return NULL;
+        $r = $response->getResponse();
+        return is_string($r) ? $r : NULL;
     }
 
     /**

@@ -24,6 +24,8 @@
 namespace TASoft\Server;
 
 
+use TASoft\Server\Exception\NoCommunicationSocketException;
+use TASoft\Server\Exception\SocketBindException;
 use TASoft\Server\Session\SessionInterface;
 use TASoft\Server\Session\UDPSession;
 
@@ -49,5 +51,53 @@ class UDPServer extends TCPServer
 		if($cb = $this->getSessionConfigHandler())
 			call_user_func($cb, $sess);
 		return $sess;
+	}
+
+	public function run()
+	{
+		if(function_exists('pcntl_signal')) {
+			$handler = function() use (&$clients) {
+				foreach($clients as $c) {
+					$sock = $c["sock"];
+					/** @var SessionInterface $sess */
+					$sess = $c["sess"];
+					$this->dropConnection($sock, $sess);
+					$sess->serverDroppedConnection($sock);
+				}
+				echo "All closed. Bye\n";
+				exit(0);
+			};
+
+			pcntl_signal(SIGINT, $handler, false);
+			pcntl_signal(SIGTERM, $handler, false);
+		}
+
+		@cli_set_process_title($this->getName());
+
+		while (1) {
+			declare(ticks=1) {
+				$len = socket_recvfrom($this->socket, $buffer, static::BUFFER_CHUNK_SIZE, 0, $addr, $port);
+			}
+			if($len > 0) {
+				$sess = new UDPSession($this->socket, $addr, $port);
+				if($cb = $this->getSessionConfigHandler())
+					$cb($sess);
+				if($request = $sess->parseRequest($buffer)) {
+					$response = $this->handleRequest($request);
+					$buffer = $sess->stringifyResponse( $response );
+
+					if($buffer !== NULL) {
+						if(socket_sendto($this->socket, $buffer, strlen($buffer), 0, $sess->getName(), $sess->getPort()) === false)
+							$sess->finishTransmission($response, false);
+						else
+							$sess->finishTransmission($response, true);
+					} else
+						$sess->finishTransmission($response, true);
+
+					$this->dropConnection($this->socket, $sess);
+					$sess->serverDroppedConnection($this->socket);
+				}
+			}
+		}
 	}
 }
