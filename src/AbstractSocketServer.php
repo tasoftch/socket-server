@@ -34,7 +34,7 @@ use TASoft\Server\Session\SessionInterface;
 abstract class AbstractSocketServer implements SocketServerInterface
 {
     /** @var resource */
-    private $socket;
+    protected $socket;
     protected $maxClients = 10;
     protected $timeout = -1;
     protected $reuseAddress = true;
@@ -159,26 +159,29 @@ abstract class AbstractSocketServer implements SocketServerInterface
         return $this;
     }
 
+    protected function prepareServer() {
+		$this->socket = $this->createCommunicationSocket();
+		if(!is_resource($this->socket)) {
+			throw new NoCommunicationSocketException("Could not create communication seocket");
+		}
+
+		$this->configureCommunicationSocket($this->socket);
+		if(!$this->bindCommunicationSocket($this->socket)) {
+			throw  new SocketBindException("Could not configure and bind socket");
+		}
+
+		if(!socket_listen($this->socket, $this->getMaxClients())) {
+			throw new SocketListenException("Could not listen on socket");
+		}
+	}
+
     /**
      * @inheritDoc
      * @throws SocketServerException
      */
     public function run()
     {
-        $this->socket = $this->createCommunicationSocket();
-        if(!is_resource($this->socket)) {
-            throw new NoCommunicationSocketException("Could not create communication seocket");
-        }
-
-        $this->configureCommunicationSocket($this->socket);
-        if(!$this->bindCommunicationSocket($this->socket)) {
-            throw  new SocketBindException("Could not configure and bind socket");
-        }
-
-        if(!socket_listen($this->socket, $maximalClients = $this->getMaxClients())) {
-            throw new SocketListenException("Could not listen on socket");
-        }
-
+    	$this->prepareServer();
         $clients = [];
 
         if(function_exists('pcntl_signal')) {
@@ -202,6 +205,7 @@ abstract class AbstractSocketServer implements SocketServerInterface
 
         while (1) {
             $read = [$this->socket];
+			$maximalClients = $this->getMaxClients();
 
             for ($i = 0; $i < $maximalClients; $i++)
             {
